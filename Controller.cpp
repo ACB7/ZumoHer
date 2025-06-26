@@ -8,22 +8,26 @@ Controller::Controller() : currentSpeed(200) {}
 void Controller::GoForward() {
     LineFollower lf;
 
-    // Lijn gevonden?
     if (lf.FindLine()) {
-        // Lees de sensorpositie
+        // Zet snelheid op basis van lijnkleur
+        if (lf.isGreenDetected()) {
+            SetSpeed(150);  // langzamer bij groen
+        } else {
+            SetSpeed(300);  // sneller bij zwart
+        }
+
+        // Lees lijnpositie
         unsigned int sensorValues[5];
         int position = lf.lineSensors.readLine(sensorValues);
 
-        // Controleer of de lijn recht ligt (tussen 1800 - 2200)
+        // Recht vooruit als de lijn gecentreerd is
         if (position > 1800 && position < 2200) {
-            motors.setSpeeds(currentSpeed, currentSpeed); // recht vooruit
+            motors.setSpeeds(currentSpeed, currentSpeed);
         } else {
-            // Als lijn wel aanwezig is maar niet recht: laat LineFollower het overnemen
-            lf.FollowLine();
+            lf.FollowLine();  // bochten → PID
         }
     } else {
-        // Lijn kwijt: achteruit gaan tot lijn weer gevonden is
-        GoBack();
+        GoBack();  // lijn kwijt
     }
 }
 
