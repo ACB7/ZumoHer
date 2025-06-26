@@ -1,35 +1,40 @@
-#ifndef ZUMO_LINE_FOLLOWER_H
-#define ZUMO_LINE_FOLLOWER_H
+#ifndef LINEFOLLOWER_H
+#define LINEFOLLOWER_H
 
-#include <Zumo32U4Motors.h>
-#include <Zumo32U4LineSensors.h>
-#include <Zumo32U4ButtonA.h>
-#include <Zumo32U4LCD.h>
+#include <Zumo32U4.h>
 
-class ZumoLineFollower {
+class LineFollower {
 public:
-    ZumoLineFollower();
+    // Constructor
+    LineFollower();
 
+    // Start de motoren
     void StartMotor();
+
+    // Stop de motoren
     void StopMotor();
+
+    // Stel de snelheid van linker- en rechtermotor in
     void SetMotorSpeed(int leftSpeed, int rightSpeed);
-    void FindLine();
+
+    // Zoek een lijn (zwart of groen)
+    bool FindLine();
+
+    // Volg de lijn (voorkeur: zwart/groen, vermijd wit)
+    void FollowLine();
 
 private:
     Zumo32U4Motors motors;
     Zumo32U4LineSensors lineSensors;
-    Zumo32U4ButtonA buttonA;
-    Zumo32U4LCD lcd;
 
-    uint16_t lineSensorValues[5];
-    const uint16_t greenThreshold = 3000; // voorbeeldwaarde
-    const uint16_t blackThreshold = 1000; // voorbeeldwaarde
-    const uint16_t whiteThreshold = 500;  // voorbeeldwaarde
+    // Sensorwaarden opslaan
+    unsigned int lineSensorValues[5];
 
-    void calibrateSensors();
-    bool isOnLine();
-    bool isOnGreen();
-    bool isOnWhite();
+    // Detecteert of de lijn groen is
+    bool isGreenDetected();
+
+    // Detecteert of het oppervlak wit is
+    bool isWhiteDetected();
 };
 
 #endif
