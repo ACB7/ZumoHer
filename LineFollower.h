@@ -20,20 +20,20 @@ public:
     // Zoek een lijn (zwart of groen)
     bool FindLine();
 
-    // Volg de lijn (voorkeur: zwart/groen, vermijd wit)
+    // Volg de lijn (PID-regeling)
     void FollowLine();
+
+    // Detecteer of een groene lijn aanwezig is
+    bool isGreenDetected();
+
+    // Lijnsensoren publiek toegankelijk voor geavanceerd gebruik
+    Zumo32U4LineSensors lineSensors;
 
 private:
     Zumo32U4Motors motors;
-    Zumo32U4LineSensors lineSensors;
-
-    // Sensorwaarden opslaan
     unsigned int lineSensorValues[5];
 
-    // Detecteert of de lijn groen is
-    bool isGreenDetected();
-
-    // Detecteert of het oppervlak wit is
+    // Detectie van wit (indien nodig later te gebruiken)
     bool isWhiteDetected();
 };
 
