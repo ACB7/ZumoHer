@@ -56,3 +56,22 @@ void Controller::MakeTurn(const char* direction) {
     delay(300); // draai even en dan stoppen
     motors.setSpeeds(0, 0);
 }
+// Huidige snelheid ophalen
+int Controller::GetSpeed() const {
+    return currentSpeed;
+}
+
+// Huidige snelheid instellen (geclamped tussen min en max)
+void Controller::SetSpeed(int speed) {
+    currentSpeed = constrain(speed, minSpeed, maxSpeed);
+}
+
+// Verhoog snelheid stapgewijs
+void Controller::Accelerate(int step) {
+    SetSpeed(currentSpeed + step);
+}
+
+// Verlaag snelheid stapgewijs
+void Controller::Decelerate(int step) {
+    SetSpeed(currentSpeed - step);
+}
