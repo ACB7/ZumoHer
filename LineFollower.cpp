@@ -10,6 +10,16 @@ void LineFollower::StartMotor() {
     SetMotorSpeed(200, 200);  // Beide motoren vooruit met snelheid 200
 }
 
+bool LineFollower::isGreenDetected() {
+    lineSensors.read(lineSensorValues);
+
+    // Stel: groene lijn reflecteert meer dan zwart maar minder dan wit
+    // (experimenteel testen, hier voorbeeldwaarde)
+    int center = lineSensorValues[2];
+
+    return center > 600 && center < 900;
+}
+
 // Stop de motoren volledig
 void LineFollower::StopMotor() {
     motors.setSpeeds(0, 0);
