@@ -5,6 +5,20 @@ LineFollower::LineFollower() {
     lineSensors.initFiveSensors();
 }
 
+// Start de motoren met standaard snelheid vooruit
+void LineFollower::StartMotor() {
+    SetMotorSpeed(200, 200);  // Beide motoren vooruit met snelheid 200
+}
+
+// Stop de motoren volledig
+void LineFollower::StopMotor() {
+    motors.setSpeeds(0, 0);
+}
+
+// Stel de snelheden van linker- en rechtermotor in
+void LineFollower::SetMotorSpeed(int leftSpeed, int rightSpeed) {
+    motors.setSpeeds(leftSpeed, rightSpeed);
+}
 // Zoek naar een lijn (zwart of groen) en return true als gevonden
 bool LineFollower::FindLine() {
     lineSensors.read(lineSensorValues);
