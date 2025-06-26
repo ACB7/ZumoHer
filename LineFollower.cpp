@@ -1,80 +1,109 @@
 #include "LineFollower.h"
 
-// Constructor initialiseert de lijnsensoren
+// Constructor: stel drempelwaarden in (pas aan op basis van je sensor)
 LineFollower::LineFollower() {
-    lineSensors.initFiveSensors();
+    GreenValue = 300; // voorbeeldwaarde, aanpassen op basis van test
+    BlackValue = 100; // voorbeeldwaarde
+    WhiteValue = 700; // voorbeeldwaarde
+    ColorValue = 0;
 }
 
-// Start de motoren met standaard snelheid vooruit
-void LineFollower::StartMotor() {
-    SetMotorSpeed(200, 200);  // Beide motoren vooruit met snelheid 200
+// Lees kleurensensor en sla waarde op
+void LineFollower::FindColor() {
+    ColorValue = readColorSensor();
 }
 
-bool LineFollower::isGreenDetected() {
-    lineSensors.read(lineSensorValues);
-
-    // Stel: groene lijn reflecteert meer dan zwart maar minder dan wit
-    // (experimenteel testen, hier voorbeeldwaarde)
-    int center = lineSensorValues[2];
-
-    return center > 600 && center < 900;
+// Retourneert kleur als string
+String LineFollower::GetColor() {
+    if (isGreen()) return "Green";
+    if (isBlack()) return "Black";
+    if (isWhite()) return "White";
+    return "Unknown";
 }
 
-// Stop de motoren volledig
-void LineFollower::StopMotor() {
-    motors.setSpeeds(0, 0);
-}
+// Zoek een lijn door te draaien tot zwart of groen wordt gedetecteerd
+void LineFollower::FindLine() {
+    FindColor();
+    while (!isBlack() && !isGreen()) {
+        // Langzaam ronddraaien
+        analogWrite(5, 80);  // rechtermotor langzaam vooruit
+        analogWrite(6, 0);
+        analogWrite(9, 0);   // linkermotor stilstaan
+        analogWrite(10, 0);
 
-// Stel de snelheden van linker- en rechtermotor in
-void LineFollower::SetMotorSpeed(int leftSpeed, int rightSpeed) {
-    motors.setSpeeds(leftSpeed, rightSpeed);
-}
-// Zoek naar een lijn (zwart of groen) en return true als gevonden
-bool LineFollower::FindLine() {
-    lineSensors.read(lineSensorValues);
-
-    // Gemiddelde reflectie berekenen
-    int total = 0;
-    for (int i = 0; i < 5; i++) {
-        total += lineSensorValues[i];
+        FindColor(); // update kleur
     }
-    int average = total / 5;
-
-    // Stel drempel in op basis van experiment (wit is meestal > 800)
-    return average < 800; // Lijn gevonden als gemiddelde lager is dan wit
+    // Stop motors als lijn gevonden is
+    analogWrite(5, 0);
+    analogWrite(6, 0);
+    analogWrite(9, 0);
+    analogWrite(10, 0);
 }
 
-// Volg de lijn met PID-regelaar
+// Volg een lijn door te reageren op sensorinput
 void LineFollower::FollowLine() {
-    static int lastError = 0;
-    static int integral = 0;
+    FindColor();
 
-    // PID parameters (pas aan indien nodig)
-    const float Kp = 0.2;
-    const float Ki = 0.0;
-    const float Kd = 5.0;
+    if (isBlack()) {
+        // Rechtdoor
+        analogWrite(5, 150);
+        analogWrite(6, 0);
+        analogWrite(9, 150);
+        analogWrite(10, 0);
+    } else if (isWhite()) {
+        // Lichtjes bijsturen
+        analogWrite(5, 80);  // rechtermotor iets trager
+        analogWrite(6, 0);
+        analogWrite(9, 120); // linkermotor sneller
+        analogWrite(10, 0);
+    } else if (isGreen()) {
+        // Bocht of kruising – kies gedrag (bijv. stop of afslaan)
+        analogWrite(5, 0);
+        analogWrite(6, 0);
+        analogWrite(9, 0);
+        analogWrite(10, 0);
+    }
+}
 
-    // Lees lijnpositie (0 - 4000). Middenlijn is ongeveer 2000.
-    int position = lineSensors.readLine(lineSensorValues);
-    int error = position - 2000;
+// Bepaal of kleur groen is
+bool LineFollower::isGreen() {
+    return ColorValue >= GreenValue - 50 && ColorValue <= GreenValue + 50;
+}
 
-    integral += error;
-    int derivative = error - lastError;
+// Bepaal of kleur zwart is
+bool LineFollower::isBlack() {
+    return ColorValue >= BlackValue - 30 && ColorValue <= BlackValue + 30;
+}
 
-    int correction = Kp * error + Ki * integral + Kd * derivative;
+// Bepaal of kleur wit is
+bool LineFollower::isWhite() {
+    return ColorValue >= WhiteValue - 50 && ColorValue <= WhiteValue + 50;
+}
 
-    lastError = error;
+// Simuleer kleurensensor (pas aan volgens jouw hardware)
+int LineFollower::readColorSensor() {
+    // Vervang deze regel met echte sensor code
+    return analogRead(A0);  // voorbeeld: gebruik analoge poort A0
+}
+// Bepaal of de huidige kleur groen is
+bool LineFollower::isGreen() {
+    return ColorValue >= GreenValue - 30 && ColorValue <= GreenValue + 30;
+}
 
-    // Basis snelheid
-    int baseSpeed = 200;
+// Bepaal of de huidige kleur zwart is
+bool LineFollower::isBlack() {
+    return ColorValue >= BlackValue - 20 && ColorValue <= BlackValue + 20;
+}
 
-    // Pas motor snelheden aan op basis van correctie
-    int leftSpeed = baseSpeed + correction;
-    int rightSpeed = baseSpeed - correction;
+// Bepaal of de huidige kleur wit is
+bool LineFollower::isWhite() {
+    return ColorValue >= WhiteValue - 40 && ColorValue <= WhiteValue + 40;
+}
 
-    // Beperk snelheden tot [-400, 400]
-    leftSpeed = constrain(leftSpeed, -400, 400);
-    rightSpeed = constrain(rightSpeed, -400, 400);
-
-    SetMotorSpeed(leftSpeed, rightSpeed);
+// Retourneer een string met de naam van de kleur
+String LineFollower::GetColor() {
+    if (isGreen()) return "Green";
+    if (isBlack()) return "Black";
+    if (isWhite()) return "White";
+    return "Unknown";
 }
