@@ -1,25 +1,44 @@
 #include <Arduino.h>
 #include "LineFollower.h"
 #include "Controller.h"
+#include "ErrorHandling.h"
 
-LineFollower lineFollower;
+// Maak objecten aan
+LineFollower lineSensor;
 Controller controller;
+ErrorHandling pid(&lineSensor);
+
+// Basisloopsnelheid (aangepast voor jouw robot)
+const int baseSpeed = 120;
 
 void setup() {
-    Serial.begin(115200);
-    delay(1000);
-    
-    // Initialiseer sensoren en motoren
-    lineFollower.lineSensors.initFiveSensors();
-    lineFollower.StartMotor();
+  Serial.begin(9600);
 
-    Serial.println("Zumo32U4 Line Follower gestart");
+  // Stel een gewenste snelheid in
+  controller.setSpeed(baseSpeed);
+
+  // Stel PID-waarden in (afhankelijk van jouw robot en testresultaten)
+  pid.setPID(1.5, 0.0, 0.8);
 }
 
 void loop() {
-    // Gebruik de controller om vooruit te gaan, met automatische lijncontrole
-    controller.GoForward();
+  // Bereken fout en stuurcorrectie
+  pid.computeError();
+  int correction = pid.getCorrection();
 
-    // Kleine delay voor stabiliteit
-    delay(50);
+  // Bereken links/rechts snelheden op basis van PID-correctie
+  int leftSpeed = baseSpeed - correction;
+  int rightSpeed = baseSpeed + correction;
+
+  // Beperk snelheden tot geldige PWM-waarden
+  leftSpeed = constrain(leftSpeed, 0, 255);
+  rightSpeed = constrain(rightSpeed, 0, 255);
+
+  // Stuur motoren individueel aan (gebruik writeMotors() alternatief)
+  analogWrite(9, leftSpeed);     // LEFT_FORWARD
+  analogWrite(10, 0);            // LEFT_BACKWARD
+  analogWrite(5, rightSpeed);    // RIGHT_FORWARD
+  analogWrite(6, 0);             // RIGHT_BACKWARD
+
+  delay(10);  // korte delay voor stabiliteit
 }
