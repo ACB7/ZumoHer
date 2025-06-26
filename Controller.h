@@ -1,44 +1,28 @@
-#include "Controller.h"
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
-// Constructor: stel standaard snelheid in
-Controller::Controller() {
-    currentSpeed = 150; // Standaardsnelheid
-    pinMode(5, OUTPUT);  // Rechtermotor vooruit
-    pinMode(6, OUTPUT);  // Rechtermotor achteruit
-    pinMode(9, OUTPUT);  // Linkermotor vooruit
-    pinMode(10, OUTPUT); // Linkermotor achteruit
-}
+#include <Arduino.h>
 
-// Stel snelheid in, begrensd door min/max
-void Controller::setSpeed(int speed) {
-    if (speed > maxSpeed) {
-        currentSpeed = maxSpeed;
-    } else if (speed < minSpeed) {
-        currentSpeed = minSpeed;
-    } else {
-        currentSpeed = speed;
-    }
-}
+class Controller {
+public:
+    Controller();               // Constructor
 
-// Rijd vooruit met huidige snelheid
-void Controller::GoForward() {
-    writeMotors(currentSpeed, 0, currentSpeed, 0);
-}
+    void turnLeft();            // Draai naar links
+    void turnRight();           // Draai naar rechts
+    void TurnLeft();            // Alternatieve versie (bijv. langzame draai)
+    void TurnRight();           // Alternatieve versie (bijv. scherpe draai)
 
-// Rijd achteruit met huidige snelheid
-void Controller::GoBack() {
-    writeMotors(0, currentSpeed, 0, currentSpeed);
-}
+    void GoForward();           // Vooruit rijden
+    void GoBack();              // Achteruit rijden
+    void setSpeed(int speed);  // Stel snelheid in (binnen limieten)
+    void Stop();                // Stop de motoren
 
-// Stop beide motoren
-void Controller::Stop() {
-    writeMotors(0, 0, 0, 0);
-}
+private:
+    int currentSpeed;          // Huidige snelheid
+    const int maxSpeed = 255;  // Maximale PWM waarde
+    const int minSpeed = 60;   // Minimale bruikbare PWM waarde
 
-// Interne functie om PWM naar motoren te schrijven
-void Controller::writeMotors(int leftForward, int leftBackward, int rightForward, int rightBackward) {
-    analogWrite(9, leftForward);    // Linkermotor vooruit
-    analogWrite(10, leftBackward);  // Linkermotor achteruit
-    analogWrite(5, rightForward);   // Rechtermotor vooruit
-    analogWrite(6, rightBackward);  // Rechtermotor achteruit
-}
+    void writeMotors(int leftForward, int leftBackward, int rightForward, int rightBackward);
+};
+
+#endif
