@@ -1,40 +1,29 @@
 #ifndef LINEFOLLOWER_H
 #define LINEFOLLOWER_H
 
-#include <Zumo32U4.h>
+#include <Arduino.h>
+
+// Je kunt hier je sensor bibliotheek includen als die nodig is.
+// Bijvoorbeeld: #include <ColorSensor.h>
 
 class LineFollower {
 public:
-    // Constructor
-    LineFollower();
-
-    // Start de motoren
-    void StartMotor();
-
-    // Stop de motoren
-    void StopMotor();
-
-    // Stel de snelheid van linker- en rechtermotor in
-    void SetMotorSpeed(int leftSpeed, int rightSpeed);
-
-    // Zoek een lijn (zwart of groen)
-    bool FindLine();
-
-    // Volg de lijn (PID-regeling)
-    void FollowLine();
-
-    // Detecteer of een groene lijn aanwezig is
-    bool isGreenDetected();
-
-    // Lijnsensoren publiek toegankelijk voor geavanceerd gebruik
-    Zumo32U4LineSensors lineSensors;
+    LineFollower();         // Constructor
+    void FindLine();        // Zoek naar de lijn (groen of zwart)
+    void FollowLine();      // Volg de lijn
+    void FindColor();       // Zoek een kleur onder de sensor
+    String GetColor();      // Geeft de huidige kleur terug als string
+    bool isGreen();         // True als de kleur groen is
+    bool isBlack();         // True als de kleur zwart is
+    bool isWhite();         // True als de kleur wit is
 
 private:
-    Zumo32U4Motors motors;
-    unsigned int lineSensorValues[5];
+    int ColorValue;         // Huidige waarde van de kleurmeting
+    int GreenValue;         // Drempelwaarde voor groen
+    int BlackValue;         // Drempelwaarde voor zwart
+    int WhiteValue;         // Drempelwaarde voor wit
 
-    // Detectie van wit (indien nodig later te gebruiken)
-    bool isWhiteDetected();
+    int readColorSensor();  // Leest de sensorwaarde (intern gebruikt)
 };
 
 #endif
