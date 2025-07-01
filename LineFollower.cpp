@@ -49,9 +49,9 @@ void LineFollower::FollowLine() {
     static int lastError = 0;
     static int integral = 0;
 
-    // PID parameters (pas aan indien nodig)
+    // PID parameters
     const float Kp = 3.5;
-    const float Ki = 0.000001;
+    const float Ki = 0.00001;
     const float Kd = 1.5;
 
     // Lees lijnpositie (0 - 4000). Middenlijn is ongeveer 2000.
@@ -65,8 +65,13 @@ void LineFollower::FollowLine() {
 
     lastError = error;
 
-    // Basis snelheid
-    int baseSpeed = 200;
+    // --- Adjust speed if green is detected ---
+    int baseSpeed;
+    if (isGreenDetected()) {
+        baseSpeed = 100;  // Slower speed on green
+    } else {
+        baseSpeed = 400;  // Normal speed
+    }
 
     // Pas motor snelheden aan op basis van correctie
     int leftSpeed = baseSpeed + correction;
