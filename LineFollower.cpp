@@ -33,15 +33,15 @@ void LineFollower::SetMotorSpeed(int leftSpeed, int rightSpeed) {
 bool LineFollower::FindLine() {
     lineSensors.read(lineSensorValues);
 
-    // Gemiddelde reflectie berekenen
+    // Both black and green reflect less than white
     int total = 0;
     for (int i = 0; i < 5; i++) {
         total += lineSensorValues[i];
     }
     int average = total / 5;
 
-    // Stel drempel in op basis van experiment (wit is meestal > 800)
-    return average < 800; // Lijn gevonden als gemiddelde lager is dan wit
+    // Assume white > 800, black < 400, green 600–900 (example, calibrate as needed)
+    return average < 900; // returns true for both black and green lines
 }
 
 // Volg de lijn met PID-regelaar
@@ -50,9 +50,9 @@ void LineFollower::FollowLine() {
     static int integral = 0;
 
     // PID parameters (pas aan indien nodig)
-    const float Kp = 0.2;
-    const float Ki = 0.0;
-    const float Kd = 5.0;
+    const float Kp = 3.5;
+    const float Ki = 0.000001;
+    const float Kd = 1.5;
 
     // Lees lijnpositie (0 - 4000). Middenlijn is ongeveer 2000.
     int position = lineSensors.readLine(lineSensorValues);
